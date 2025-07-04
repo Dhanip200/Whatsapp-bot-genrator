@@ -162,4 +162,4 @@ process.on('SIGINT', async () => {
   process.exit(0);
 });
 
-app.listen(PORT, () => console.log(`🌐 Server running: https://whatbot-jxnb.onrender.com:${PORT}`));
+app.listen(PORT, () => console.log(`🌐 Server running: http://localhost:${PORT}`));
