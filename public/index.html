@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>WhatsApp GPT Bot</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Inter', sans-serif;
+      background: #f8d3dd;
+      display: flex;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    .left, .right {
+      width: 50%;
+      padding: 3rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+    }
+
+    .left {
+      background: linear-gradient(to bottom, #f8d3dd, #f3f3f3);
+    }
+
+    .card {
+      background: white;
+      border-radius: 20px;
+      padding: 2rem;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+      width: 100%;
+      max-width: 400px;
+    }
+
+    .card img {
+      width: 100%;
+      max-width: 240px;
+      border-radius: 12px;
+      display: block;
+      margin: 0 auto 2rem;
+    }
+
+    .card h2 {
+      font-size: 1.25rem;
+      margin-bottom: 1rem;
+      font-weight: 600;
+      color: #333;
+    }
+
+    .card textarea {
+      width: 100%;
+      padding: 0.75rem 1rem;
+      border-radius: 10px;
+      border: 1px solid #ccc;
+      margin-bottom: 1rem;
+      font-size: 1rem;
+    }
+
+    .card button {
+      background: #e1003c;
+      color: white;
+      border: none;
+      padding: 0.75rem 1.2rem;
+      border-radius: 10px;
+      font-weight: 600;
+      width: 100%;
+      font-size: 1rem;
+      cursor: pointer;
+    }
+
+    .right {
+      background: #e1003c;
+      color: white;
+      flex-direction: column;
+      text-align: center;
+      justify-content: space-between;
+      overflow: hidden;
+    }
+
+    .right h1 {
+      font-size: 3rem;
+      font-weight: 800;
+      line-height: 1.2;
+      position: relative;
+      z-index: 1;
+    }
+
+    .right p {
+      font-size: 1.25rem;
+      margin-top: 1rem;
+      max-width: 80%;
+      margin-left: auto;
+      margin-right: auto;
+      position: relative;
+      z-index: 1;
+    }
+
+    .shape {
+      position: absolute;
+      width: 40px;
+      height: 40px;
+      background: rgba(255, 255, 255, 0.3);
+      border-radius: 50%;
+      top: 50%;
+      left: 50%;
+      z-index: 0;
+    }
+
+    @media (max-width: 768px) {
+      body {
+        flex-direction: column;
+      }
+      .left, .right {
+        width: 100%;
+        height: auto;
+        padding: 2rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="left">
+    <div class="card">
+      <img src="" id="qrImage" alt="QR Code" />
+      <h2>Update System Prompt</h2>
+      <form id="promptForm">
+        <textarea id="prompt" placeholder="Enter prompt here..."></textarea>
+        <button type="submit" id="submitBtn">Update Prompt</button>
+      </form>
+    </div>
+  </div>
+
+  <div class="right">
+    <!-- Floating shapes -->
+    <div class="shape"></div>
+    <div class="shape"></div>
+    <div class="shape"></div>
+    <div class="shape"></div>
+    <div class="shape"></div>
+
+    <div>
+      <h1>Scan QR code to start your personal GPT WhatsApp bot</h1>
+      <p>This will launch a temporary unique bot instance just for you.</p>
+    </div>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
+  <script>
+    function random(min, max) {
+      return Math.random() * (max - min) + min;
+    }
+
+    document.querySelectorAll('.shape').forEach((shape) => {
+      function animateShape() {
+        anime({
+          targets: shape,
+          translateX: random(-200, 200),
+          translateY: random(-200, 200),
+          rotate: random(-180, 180),
+          duration: random(2000, 4000),
+          easing: 'easeInOutSine',
+          complete: animateShape
+        });
+      }
+      animateShape();
+    });
+
+    const sessionId = window.location.pathname.split('/').pop();
+
+    const qr = document.getElementById('qrImage');
+    qr.src = `/qr/${sessionId}`;
+
+    document.getElementById('promptForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const prompt = document.getElementById('prompt').value;
+      const button = document.getElementById('submitBtn');
+      if (!prompt.trim()) return;
+      button.disabled = true;
+      button.textContent = "Updating...";
+      const res = await fetch(`/session/${sessionId}/set-prompt`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ prompt })
+      });
+      const data = await res.json();
+      alert(data.message || "Updated.");
+      button.textContent = "Update Prompt";
+      button.disabled = false;
+    });
+
+    setInterval(() => {
+      qr.src = `/qr/${sessionId}?t=${Date.now()}`;
+    }, 10000);
+  </script>
+</body>
+</html>
